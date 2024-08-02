@@ -51,8 +51,8 @@ def gen_image(prompt, steps, height, width, seed, guidance_scale):
     return image
     # image.save(f"{prompt}.png")
 
-with gr.Blocks(theme=gr.themes.Soft(), title="Nuke's Flux Capacitor") as demo:
-    gr.Markdown(f"<h1 style='text-align: center; display:block'>{'Nuke&apos;s Flux Capacitor'}</h1>")
+with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as demo:
+    gr.Markdown(f"<h1 style='text-align: center; display:block'>{'NuclearGeek&apos;s Flux Capacitor'}</h1>")
     with gr.Row():
 
         steps_slider = gr.Slider(
