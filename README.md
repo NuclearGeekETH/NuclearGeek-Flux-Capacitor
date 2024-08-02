@@ -22,3 +22,6 @@ Follow these steps to set up the environment and run the application:
    - Execute `start_flux.bat` to install the necessary environment and dependencies, and to run the script.
    ```plaintext
    ./start_flux.bat
+
+2. **Open Web Browser**:
+   - View the web app at http://localhost:7860/
