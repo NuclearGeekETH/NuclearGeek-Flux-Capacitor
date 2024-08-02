@@ -1,6 +1,6 @@
 # Nuclear Geek's Flux Capacitor
 
-A sophisticated project utilizing Black Forest Lab's FLUX model for generating images via a web application.
+A project utilizing Black Forest Lab's FLUX model for generating images via a web application.
 
 ## Prerequisites
 
