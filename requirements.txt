@@ -1,0 +1,7 @@
+python-dotenv 
+transformers 
+accelerate 
+sentencepiece 
+protobuf 
+optimum-quanto 
+gradio
