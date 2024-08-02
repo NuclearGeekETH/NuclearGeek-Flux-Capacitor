@@ -9,7 +9,7 @@ import torch
 import gradio as gr
 from diffusers import FluxPipeline
 from huggingface_hub import login
-from optimum.quanto import freeze, qfloat8, quantize
+from optimum.quanto import freeze, qfloat8, qint4, quantize
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,7 +26,9 @@ pipe.enable_model_cpu_offload()
 # Memory-efficient Diffusion Transformers with Quanto and Diffusers
 # https://huggingface.co/blog/quanto-diffusers
 print("Running transformer quantize")
+# Toggle whichever quantize method will work better for your system:
 quantize(pipe.transformer, weights=qfloat8)
+# quantize(pipe.transformer, weights=qint4, exclude="proj_out")
 print("Running transformer freeze")
 freeze(pipe.transformer)
 print("Running text_encoder quantize")
