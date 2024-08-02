@@ -77,7 +77,7 @@ with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as 
         )
 
         seed_slider = gr.Slider(
-            0,99999999999,
+            0,99999999,
             label = "Seed",
             value = 0,
             render = False
