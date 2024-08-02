@@ -33,6 +33,7 @@ print("Running transformer freeze")
 freeze(pipe.transformer)
 print("Running text_encoder quantize")
 quantize(pipe.text_encoder, weights=qfloat8)
+# quantize(pipe.text_encoder, weights=qint4, exclude="proj_out")
 print("Running text_encoder freeze")
 freeze(pipe.text_encoder)
 
