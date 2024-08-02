@@ -2,6 +2,10 @@
 
 A project utilizing [Black Forest Lab's](https://blackforestlabs.ai/) FLUX model for generating images via a web application.
 
+## Video Tutorial
+
+[![Flux Text To Image Demo](https://img.youtube.com/vi/EZVjuFZ0otQ/0.jpg)](https://www.youtube.com/watch?v=EZVjuFZ0otQ)
+
 ## Prerequisites
 
 1. **Hugging Face Access Token**:
