@@ -19,7 +19,7 @@ A project utilizing [Black Forest Lab's](https://blackforestlabs.ai/) FLUX model
 Follow these steps to set up the environment and run the application:
 
 1. **Run the setup script**:
-   - Execute `start_flux.bat` to install the necessary environment and dependencies, and to run the script.
+   - Double-click on the file `start_flux.bat` to install the necessary environment and dependencies, and to run the script.
    ```plaintext
    ./start_flux.bat
    ```
