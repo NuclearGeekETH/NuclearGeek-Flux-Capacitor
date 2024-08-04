@@ -54,7 +54,7 @@ quantize(pipe_schnell.text_encoder, weights=qfloat8)
 print("Running text_encoder freeze SCHNELL")
 freeze(pipe_schnell.text_encoder)
 
-# Generate Image
+# Generate Dev Image
 def gen_image_dev(prompt, steps, height, width, seed, guidance_scale):
     print("Generating...")
     image = pipe_dev(
@@ -71,7 +71,7 @@ def gen_image_dev(prompt, steps, height, width, seed, guidance_scale):
     return image
     # image.save(f"{prompt}.png")
 
-# Generate Image
+# Generate Schnell Image
 def gen_image_schnell(prompt, steps, height, width, seed, guidance_scale):
     print("Generating...")
     image = pipe_schnell(
@@ -87,8 +87,11 @@ def gen_image_schnell(prompt, steps, height, width, seed, guidance_scale):
     print("Saving...")
     return image
 
+# Create Gradio webapp
 with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as demo:
     gr.Markdown(f"<h1 style='text-align: center; display:block'>{'NuclearGeek&apos;s Flux Capacitor'}</h1>")
+    
+    # Dev Tab
     with gr.Tab("FLUX.1-dev"):
         with gr.Row():
 
@@ -133,6 +136,7 @@ with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as 
             outputs=[gr.Image(type="numpy", label="Output Image")]
         )
 
+    # Schnell Tab
     with gr.Tab("FLUX.1-schnell"):
         with gr.Row():
 
