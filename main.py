@@ -18,29 +18,46 @@ hk_token = os.getenv('HF_TOKEN')
 
 login(token=hk_token)
 
-pipe = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)
+pipe_dev = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)
+pipe_schnell = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16)
 
 # save some VRAM by offloading the model to CPU, disable this if you have enough gpu power
-pipe.enable_model_cpu_offload() 
+pipe_dev.enable_model_cpu_offload() 
+pipe_schnell.enable_model_cpu_offload() 
 
 # Memory-efficient Diffusion Transformers with Quanto and Diffusers
 # https://huggingface.co/blog/quanto-diffusers
-print("Running transformer quantize")
+
+# Dev Versions
+print("Running transformer quantize DEV")
 # Toggle whichever quantize method will work better for your system:
-quantize(pipe.transformer, weights=qfloat8)
+quantize(pipe_dev.transformer, weights=qfloat8)
 # quantize(pipe.transformer, weights=qint4, exclude="proj_out")
-print("Running transformer freeze")
-freeze(pipe.transformer)
-print("Running text_encoder quantize")
-quantize(pipe.text_encoder, weights=qfloat8)
+print("Running transformer freeze DEV")
+freeze(pipe_dev.transformer)
+print("Running text_encoder quantize DEV")
+quantize(pipe_dev.text_encoder, weights=qfloat8)
 # quantize(pipe.text_encoder, weights=qint4, exclude="proj_out")
-print("Running text_encoder freeze")
-freeze(pipe.text_encoder)
+print("Running text_encoder freeze DEV")
+freeze(pipe_dev.text_encoder)
+
+# Schnell Versions
+print("Running transformer quantize SCHNELL")
+# Toggle whichever quantize method will work better for your system:
+quantize(pipe_schnell.transformer, weights=qfloat8)
+# quantize(pipe.transformer, weights=qint4, exclude="proj_out")
+print("Running transformer freeze SCHNELL")
+freeze(pipe_schnell.transformer)
+print("Running text_encoder quantize SCHNELL")
+quantize(pipe_schnell.text_encoder, weights=qfloat8)
+# quantize(pipe.text_encoder, weights=qint4, exclude="proj_out")
+print("Running text_encoder freeze SCHNELL")
+freeze(pipe_schnell.text_encoder)
 
 # Generate Image
-def gen_image(prompt, steps, height, width, seed, guidance_scale):
+def gen_image_dev(prompt, steps, height, width, seed, guidance_scale):
     print("Generating...")
-    image = pipe(
+    image = pipe_dev(
         prompt,
         height=int(height),
         width=int(width),
@@ -54,50 +71,111 @@ def gen_image(prompt, steps, height, width, seed, guidance_scale):
     return image
     # image.save(f"{prompt}.png")
 
+# Generate Image
+def gen_image_schnell(prompt, steps, height, width, seed, guidance_scale):
+    print("Generating...")
+    image = pipe_schnell(
+        prompt,
+        height=int(height),
+        width=int(width),
+        guidance_scale=int(guidance_scale),
+        output_type="pil",
+        num_inference_steps=int(steps),
+        max_sequence_length=256,
+        generator=torch.Generator("cuda").manual_seed(int(seed))
+    ).images[0]
+    print("Saving...")
+    return image
+
 with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as demo:
     gr.Markdown(f"<h1 style='text-align: center; display:block'>{'NuclearGeek&apos;s Flux Capacitor'}</h1>")
-    with gr.Row():
+    with gr.Tab("FLUX.1-dev"):
+        with gr.Row():
 
-        steps_slider = gr.Slider(
-            0,100,
-            label = "Steps",
-            value = 50,
-            render = False
+            steps_slider = gr.Slider(
+                0,100,
+                label = "Steps",
+                value = 50,
+                render = False
+            )
+
+            height_slider = gr.Slider(
+                0,2048,
+                label = "Height",
+                value = 1024,
+                render = False
+            )
+
+            width_slider = gr.Slider(
+                0,2048,
+                label = "Width",
+                value = 1024,
+                render = False
+            )
+
+            seed_slider = gr.Slider(
+                0,99999999,
+                label = "Seed",
+                value = 0,
+                render = False
+            )
+
+            guidance_slider = gr.Slider(
+                0,20,
+                label = "Guidance Scale",
+                value = 3.5,
+                render = False
+            )
+
+        chat = gr.Interface(
+            fn = gen_image_dev,
+            inputs = [gr.Text(label="Input Prompt"), steps_slider, height_slider, width_slider, seed_slider, guidance_slider], 
+            outputs=[gr.Image(type="numpy", label="Output Image")]
         )
 
-        height_slider = gr.Slider(
-            0,2048,
-            label = "Height",
-            value = 1024,
-            render = False
-        )
+    with gr.Tab("FLUX.1-schnell"):
+        with gr.Row():
 
-        width_slider = gr.Slider(
-            0,2048,
-            label = "Width",
-            value = 1024,
-            render = False
-        )
+            steps_slider = gr.Slider(
+                0,100,
+                label = "Steps",
+                value = 4,
+                render = False
+            )
 
-        seed_slider = gr.Slider(
-            0,99999999,
-            label = "Seed",
-            value = 0,
-            render = False
-        )
+            height_slider = gr.Slider(
+                0,2048,
+                label = "Height",
+                value = 1024,
+                render = False
+            )
 
-        guidance_slider = gr.Slider(
-            0,20,
-            label = "Guidance Scale",
-            value = 3.5,
-            render = False
-        )
+            width_slider = gr.Slider(
+                0,2048,
+                label = "Width",
+                value = 1024,
+                render = False
+            )
 
-    chat = gr.Interface(
-        fn = gen_image,
-        inputs = [gr.Text(label="Input Prompt"), steps_slider, height_slider, width_slider, seed_slider, guidance_slider], 
-        outputs=[gr.Image(type="numpy", label="Output Image")]
-    )
+            seed_slider = gr.Slider(
+                0,99999999,
+                label = "Seed",
+                value = 0,
+                render = False
+            )
+
+            guidance_slider = gr.Slider(
+                0,20,
+                label = "Guidance Scale",
+                value = 0,
+                render = False
+            )
+
+        chat = gr.Interface(
+            fn = gen_image_schnell,
+            inputs = [gr.Text(label="Input Prompt"), steps_slider, height_slider, width_slider, seed_slider, guidance_slider], 
+            outputs=[gr.Image(type="numpy", label="Output Image")]
+        )
 
 if __name__ == "__main__":
     demo.queue()
