@@ -23,11 +23,15 @@ bfl_repo = "black-forest-labs/FLUX.1-dev"
 dtype = torch.bfloat16
 
 transformer = FluxTransformer2DModel.from_single_file("https://huggingface.co/Kijai/flux-fp8/blob/main/flux1-dev-fp8.safetensors", torch_dtype=dtype)
+print("Running transformer quantize DEV")
 quantize(transformer, weights=qfloat8)
+print("Running transformer freeze DEV")
 freeze(transformer)
 
 text_encoder_2 = T5EncoderModel.from_pretrained(bfl_repo, subfolder="text_encoder_2", torch_dtype=dtype)
+print("Running text_encoder quantize DEV")
 quantize(text_encoder_2, weights=qfloat8)
+print("Running text_encoder freeze DEV")
 freeze(text_encoder_2)
 
 pipe = FluxPipeline.from_pretrained(bfl_repo, transformer=None, text_encoder_2=None, torch_dtype=dtype)
