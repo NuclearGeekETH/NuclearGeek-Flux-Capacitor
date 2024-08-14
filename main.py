@@ -20,13 +20,8 @@ hk_token = os.getenv('HF_TOKEN')
 login(token=hk_token)
 
 pipe_dev = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)
-pipe_schnell = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16)
+# pipe_schnell = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16)
 # pipe_img2img = AutoPipelineForImage2Image.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.float16, use_safetensors=True)
-
-# save some VRAM by offloading the model to CPU, disable this if you have enough gpu power
-pipe_dev.enable_model_cpu_offload() 
-pipe_schnell.enable_model_cpu_offload() 
-# pipe_img2img.enable_model_cpu_offload() 
 
 # Memory-efficient Diffusion Transformers with Quanto and Diffusers
 # https://huggingface.co/blog/quanto-diffusers
@@ -44,7 +39,7 @@ quantize(pipe_dev.text_encoder, weights=qfloat8)
 print("Running text_encoder freeze DEV")
 freeze(pipe_dev.text_encoder)
 
-# # Dev Versions
+# # Dev Img2Img Versions
 # print("Running transformer quantize DEV")
 # # Toggle whichever quantize method will work better for your system:
 # quantize(pipe_img2img.transformer, weights=qfloat8)
@@ -57,18 +52,24 @@ freeze(pipe_dev.text_encoder)
 # print("Running text_encoder freeze DEV")
 # freeze(pipe_img2img.text_encoder)
 
-# Schnell Versions
-print("Running transformer quantize SCHNELL")
-# Toggle whichever quantize method will work better for your system:
-quantize(pipe_schnell.transformer, weights=qfloat8)
-# quantize(pipe.transformer, weights=qint4, exclude="proj_out")
-print("Running transformer freeze SCHNELL")
-freeze(pipe_schnell.transformer)
-print("Running text_encoder quantize SCHNELL")
-quantize(pipe_schnell.text_encoder, weights=qfloat8)
-# quantize(pipe.text_encoder, weights=qint4, exclude="proj_out")
-print("Running text_encoder freeze SCHNELL")
-freeze(pipe_schnell.text_encoder)
+# # Schnell Versions
+# print("Running transformer quantize SCHNELL")
+# # Toggle whichever quantize method will work better for your system:
+# quantize(pipe_schnell.transformer, weights=qfloat8)
+# # quantize(pipe.transformer, weights=qint4, exclude="proj_out")
+# print("Running transformer freeze SCHNELL")
+# freeze(pipe_schnell.transformer)
+# print("Running text_encoder quantize SCHNELL")
+# quantize(pipe_schnell.text_encoder, weights=qfloat8)
+# # quantize(pipe.text_encoder, weights=qint4, exclude="proj_out")
+# print("Running text_encoder freeze SCHNELL")
+# freeze(pipe_schnell.text_encoder)
+
+# save some VRAM by offloading the model to CPU, disable this if you have enough gpu power
+pipe_dev.enable_model_cpu_offload() 
+# pipe_schnell.enable_model_cpu_offload() 
+# pipe_img2img.enable_model_cpu_offload() 
+
 
 # Generate Dev Image
 def gen_image_dev(prompt, steps, height, width, seed, guidance_scale):
@@ -87,21 +88,21 @@ def gen_image_dev(prompt, steps, height, width, seed, guidance_scale):
     return image
     # image.save(f"{prompt}.png")
 
-# Generate Schnell Image
-def gen_image_schnell(prompt, steps, height, width, seed, guidance_scale):
-    print("Generating...")
-    image = pipe_schnell(
-        prompt,
-        height=int(height),
-        width=int(width),
-        guidance_scale=int(guidance_scale),
-        output_type="pil",
-        num_inference_steps=int(steps),
-        max_sequence_length=256,
-        generator=torch.Generator("cuda").manual_seed(int(seed))
-    ).images[0]
-    print("Saving...")
-    return image
+# # Generate Schnell Image
+# def gen_image_schnell(prompt, steps, height, width, seed, guidance_scale):
+#     print("Generating...")
+#     image = pipe_schnell(
+#         prompt,
+#         height=int(height),
+#         width=int(width),
+#         guidance_scale=int(guidance_scale),
+#         output_type="pil",
+#         num_inference_steps=int(steps),
+#         max_sequence_length=256,
+#         generator=torch.Generator("cuda").manual_seed(int(seed))
+#     ).images[0]
+#     print("Saving...")
+#     return image
 
 # # Generate Dev Image
 # def gen_image_to_image_dev(prompt, init_image, steps, height, width, seed, guidance_scale):
@@ -160,7 +161,7 @@ with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as 
             guidance_slider = gr.Slider(
                 0,20,
                 label = "Guidance Scale",
-                value = 3.5,
+                value = 7.5,
                 render = False
             )
 
@@ -171,49 +172,49 @@ with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as 
         )
 
     # Schnell Tab
-    with gr.Tab("FLUX.1-schnell"):
-        with gr.Row():
+    # with gr.Tab("FLUX.1-schnell"):
+    #     with gr.Row():
 
-            steps_slider = gr.Slider(
-                0,100,
-                label = "Steps",
-                value = 4,
-                render = False
-            )
+    #         steps_slider = gr.Slider(
+    #             0,100,
+    #             label = "Steps",
+    #             value = 4,
+    #             render = False
+    #         )
 
-            height_slider = gr.Slider(
-                0,2048,
-                label = "Height",
-                value = 1024,
-                render = False
-            )
+    #         height_slider = gr.Slider(
+    #             0,2048,
+    #             label = "Height",
+    #             value = 1024,
+    #             render = False
+    #         )
 
-            width_slider = gr.Slider(
-                0,2048,
-                label = "Width",
-                value = 1024,
-                render = False
-            )
+    #         width_slider = gr.Slider(
+    #             0,2048,
+    #             label = "Width",
+    #             value = 1024,
+    #             render = False
+    #         )
 
-            seed_slider = gr.Slider(
-                0,99999999,
-                label = "Seed",
-                value = 0,
-                render = False
-            )
+    #         seed_slider = gr.Slider(
+    #             0,99999999,
+    #             label = "Seed",
+    #             value = 0,
+    #             render = False
+    #         )
 
-            guidance_slider = gr.Slider(
-                0,20,
-                label = "Guidance Scale",
-                value = 0,
-                render = False
-            )
+    #         guidance_slider = gr.Slider(
+    #             0,20,
+    #             label = "Guidance Scale",
+    #             value = 0,
+    #             render = False
+    #         )
 
-        chat = gr.Interface(
-            fn = gen_image_schnell,
-            inputs = [gr.Text(label="Input Prompt"), steps_slider, height_slider, width_slider, seed_slider, guidance_slider], 
-            outputs=[gr.Image(type="numpy", label="Output Image")]
-        )
+    #     chat = gr.Interface(
+    #         fn = gen_image_schnell,
+    #         inputs = [gr.Text(label="Input Prompt"), steps_slider, height_slider, width_slider, seed_slider, guidance_slider], 
+    #         outputs=[gr.Image(type="numpy", label="Output Image")]
+    #     )
 
     # with gr.Tab("Image-to-Image"):
     #     with gr.Row():
@@ -268,6 +269,7 @@ with gr.Blocks(theme=gr.themes.Soft(), title="NuclearGeek's Flux Capacitor") as 
     #     )
 
 if __name__ == "__main__":
+
     demo.queue()
     # # Toggle this on if you want to share your app, change the username and password
     # demo.launch(server_port=7862, share=True, auth=("nuke", "password"))
